@@ -1,0 +1,1 @@
+# 8. Program, który policzy pole prostokąta (użytkownik podaje długości boków)
