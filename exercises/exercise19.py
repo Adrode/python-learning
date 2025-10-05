@@ -28,7 +28,7 @@ while True:
 
   if menu == "1":
     if country in countries:
-      country_info(country)
+         country_info(country)
     else:
       print("Brak wpisu na temat tego kraju")
   elif menu == "2":
