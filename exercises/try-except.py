@@ -1,11 +1,10 @@
 try:
-  number = int(input("Podaj liczbę: "))
-  result = 100 / number
-except ValueError:
-  print("Podano błędną wartość")
-except ZeroDivisionError:
-  print("Nie dziel przez 0, głąbie!")
-else:
-  print(f"Wynik 100 / {number} = {result}")
+  path = input("Podaj ścieżkę do pliku: ")
+  with open(path, 'r') as f:
+    print(f.read())
+except FileNotFoundError:
+  print("Brak takiego pliku")
+except PermissionError:
+  print("Brak dostępu do pliku")
 finally:
-  print("I'm done...")
+  print("sic!")
