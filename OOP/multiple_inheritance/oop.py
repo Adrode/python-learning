@@ -1,8 +1,12 @@
-class Prey:
+class Animal:
+  def eat(self):
+    print(f"{self.name} is eating")
+
+class Prey(Animal):
   def flee(self):
     print(f"{self.name} is running away!")
 
-class Predator:
+class Predator(Animal):
   def hunt(self):
     print(f"{self.name} is hunting")
 
@@ -28,3 +32,4 @@ fish2 = Small_fish("Little Tony")
 
 fish2.flee()
 fish2.quick_dodge()
+fish.eat()
