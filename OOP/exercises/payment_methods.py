@@ -8,7 +8,7 @@ class PaymentMethod(ABC):
   def process_payment(self):
     pass
 
-class CreditcardPayment(PaymentMethod):
+class CreditCardPayment(PaymentMethod):
   def process_payment(self):
     print(f"Payment successful. ${self.amount} processed using Credit Card method")
 
@@ -20,9 +20,7 @@ class BLIKPayment(PaymentMethod):
   def process_payment(self):
     print(f"Payment successful. ${self. amount} processed using BLIK method")
 
-paypal = PayPalPayment(100)
-blik = BLIKPayment(120)
-credit_card = CreditcardPayment(1500)
-paypal.process_payment()
-blik.process_payment()
-credit_card.process_payment()
+payments = [CreditCardPayment(100), PayPalPayment(1200), BLIKPayment(900)]
+
+for payment in payments:
+  payment.process_payment()
