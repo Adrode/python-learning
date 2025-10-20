@@ -1,5 +1,5 @@
 # Warrior - 200HP, 40 armor, 15 DMG, 10% dodge
-# Mage - 100HP, 10 DMG co turę przez 4 tury, 30 DMG, 20% dodge
+# Mage - 100HP, 10 DMG co turę przez 2 tury - 40% chance, 30 DMG, 20% dodge
 # Rogue - 120HP, 50% crit. - 30% szany, 20 DMG, 40% dodge
 
 from abc import ABC, abstractmethod
@@ -14,18 +14,14 @@ class Character(ABC):
     self.dodge_chance = dodge_chance
 
   def dodge(self, target):
-    dodge_chance_number = random.randint(0, 100)
-    if dodge_chance_number in range(0, target.dodge_chance):
-      return True
-    else:
-      return False
+    return random.random() < target.dodge_chance / 100
     
   @abstractmethod
   def take_damage(self, opponent):
     pass
 
   def attack(self, target):
-    if self.dodge(target) != True:
+    if not self.dodge(target):
       print(f"{self.__class__.__name__} {self.name} deals {self.damage} DMG to {target.__class__.__name__}: {target.name}.")
       target.take_damage(self)
       return True
@@ -36,6 +32,34 @@ class Character(ABC):
   @abstractmethod
   def show_stats(self):
     print(f"{self.__class__.__name__}: {self.name}\nHP: {self.hp}\nDMG: {self.damage}\nDodge chance: {self.dodge_chance}")
+
+class HasDOT:
+  def __init__(self):
+    self.base_dot_counter = 0
+    self.dot_counters = {}
+
+  def chance_dot_counter(self):
+    return random.random() < self.chance_dot / 100
+
+  def generate_dot_counter(self):
+    self.base_dot_counter += 1
+    self.dot_counters.update({f"dot_counter{self.base_dot_counter}": self.num_rounds_dot})
+
+  def initiate_dot(self):
+    if self.chance_dot_counter():
+      self.generate_dot_counter()
+
+  def deal_dot(self, target):
+    self.initiate_dot()
+    temp_sum = 0
+    for key, value in self.dot_counters.items():
+      if value > 0:
+        temp_sum += self.damage_over_time
+        target.hp -= self.damage_over_time
+        self.dot_counters.update({key: value - 1})
+    if temp_sum:
+      print(f"{self.__class__.__name__} {self.name} deals {temp_sum} DMG as DOT to {target.__class__.__name__}: {target.name}.")
+
 
 class Warrior(Character):
   def __init__(self, name, hp, damage, dodge_chance, armor):
@@ -72,14 +96,10 @@ class Rogue(Character):
     print(f"Crit chance: {self.crit_chance}")
 
   def crit_attack_chance(self):
-    crit_chance_number = random.randint(0, 100)
-    if crit_chance_number in range(0, self.crit_chance):
-      return True
-    else:
-      return False
+    return random.random() < self.crit_chance / 100
 
   def attack(self, target):
-    if self.crit_attack_chance() == True:
+    if self.crit_attack_chance():
       print("CRITICAL!")
       temp_damage = self.damage
       self.damage *= (self.crit_value / 100) + 1
@@ -92,11 +112,33 @@ class Rogue(Character):
     self.hp -= opponent.damage
     print(f"Rogue '{self.name}': {self.hp} HP left")
 
+class Mage(Character, HasDOT):
+  def __init__(self, name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot):
+    super().__init__(name, hp, damage, dodge_chance)
+    self.damage_over_time = damage_over_time
+    self.num_rounds_dot = num_rounds_dot
+    self.chance_dot = chance_dot
+
+  def show_stats(self):
+    super().show_stats()
+    print(f"Damage over time: {self.damage_over_time}")
+    print(f"No. of rounds for DOT: {self.num_rounds_dot}")
+    print(f"DOT apply chance: {self.chance_dot}")
+
+  def attack(self, target):
+    super().attack(target)
+    self.deal_dot(target)
+  
+  def take_damage(self, opponent):
+    self.hp -= opponent.damage
+    print(f"Mage '{self.name}': {self.hp} HP left")
+
 warrior = Warrior("Gacek", 200, 15, 10, 40)
 rogue = Rogue("Niecny Maniuś", 120, 20, 40, 50, 30)
+mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 4, 40)
 
 counter = 0
-while warrior.hp > 0 and rogue.hp > 0:
+while warrior.hp > 0 and mage.hp > 0:
   counter += 1
   print(f"ROUND {counter}")
   for i in range(3, 0, -1):
@@ -106,7 +148,7 @@ while warrior.hp > 0 and rogue.hp > 0:
   print("--------------------")
   time.sleep(2)
 
-  warrior.attack(rogue)
+  warrior.attack(mage)
   time.sleep(2)
-  rogue.attack(warrior)
+  mage.attack(warrior)
   time.sleep(2)
