@@ -7,7 +7,8 @@ import random
 import time
 
 class Character(ABC):
-  def __init__(self, name, hp, damage, dodge_chance):
+  def __init__(self, name, hp, damage, dodge_chance, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.name = name
     self.hp = hp
     self.damage = damage
@@ -34,7 +35,8 @@ class Character(ABC):
     print(f"{self.__class__.__name__}: {self.name}\nHP: {self.hp}\nDMG: {self.damage}\nDodge chance: {self.dodge_chance}")
 
 class HasDOT:
-  def __init__(self):
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.base_dot_counter = 0
     self.dot_counters = {}
 
@@ -113,8 +115,8 @@ class Rogue(Character):
     print(f"Rogue '{self.name}': {self.hp} HP left")
 
 class Mage(Character, HasDOT):
-  def __init__(self, name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot):
-    super().__init__(name, hp, damage, dodge_chance)
+  def __init__(self, name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot, *args, **kwargs):
+    super().__init__(name, hp, damage, dodge_chance, *args, **kwargs)
     self.damage_over_time = damage_over_time
     self.num_rounds_dot = num_rounds_dot
     self.chance_dot = chance_dot
@@ -138,7 +140,7 @@ rogue = Rogue("Niecny Maniuś", 120, 20, 40, 50, 30)
 mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 4, 40)
 
 counter = 0
-while warrior.hp > 0 and mage.hp > 0:
+while rogue.hp > 0 and mage.hp > 0:
   counter += 1
   print(f"ROUND {counter}")
   for i in range(3, 0, -1):
@@ -148,7 +150,7 @@ while warrior.hp > 0 and mage.hp > 0:
   print("--------------------")
   time.sleep(2)
 
-  warrior.attack(mage)
+  rogue.attack(mage)
   time.sleep(2)
-  mage.attack(warrior)
+  mage.attack(rogue)
   time.sleep(2)
