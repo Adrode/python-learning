@@ -7,8 +7,8 @@ import random
 import time
 
 class Character(ABC):
-  def __init__(self, name, hp, damage, dodge_chance, *args, **kwargs):
-    super().__init__(*args, **kwargs)
+  def __init__(self, name, hp, damage, dodge_chance):
+    super().__init__()
     self.name = name
     self.hp = hp
     self.damage = damage
@@ -35,8 +35,8 @@ class Character(ABC):
     print(f"{self.__class__.__name__}: {self.name}\nHP: {self.hp}\nDMG: {self.damage}\nDodge chance: {self.dodge_chance}")
 
 class HasDOT:
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
+  def __init__(self):
+    super().__init__()
     self.base_dot_counter = 0
     self.dot_counters = {}
 
@@ -115,8 +115,8 @@ class Rogue(Character):
     print(f"Rogue '{self.name}': {self.hp} HP left")
 
 class Mage(Character, HasDOT):
-  def __init__(self, name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot, *args, **kwargs):
-    super().__init__(name, hp, damage, dodge_chance, *args, **kwargs)
+  def __init__(self, name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot):
+    super().__init__(name, hp, damage, dodge_chance)
     self.damage_over_time = damage_over_time
     self.num_rounds_dot = num_rounds_dot
     self.chance_dot = chance_dot
