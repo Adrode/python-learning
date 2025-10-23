@@ -18,17 +18,15 @@ class Character(ABC):
     return random.random() < target.dodge_chance / 100
     
   @abstractmethod
-  def take_damage(self, opponent):
+  def take_damage(self, opponent_damage):
     pass
 
   def attack(self, target):
     if not self.dodge(target):
       print(f"{self.__class__.__name__} {self.name} deals {self.damage} DMG to {target.__class__.__name__}: {target.name}.")
-      target.take_damage(self)
-      return True
+      target.take_damage(self.damage)
     else:
       print(f"{self.__class__.__name__} {self.name} missed! No DMG dealt to {target.__class__.__name__}: {target.name}.")
-      return False
 
   @abstractmethod
   def show_stats(self):
@@ -52,7 +50,6 @@ class HasDOT:
       self.generate_dot_counter()
 
   def deal_dot(self, target):
-    self.initiate_dot()
     temp_sum = 0
     for key, value in self.dot_counters.items():
       if value > 0:
@@ -61,7 +58,6 @@ class HasDOT:
         self.dot_counters.update({key: value - 1})
     if temp_sum:
       print(f"{self.__class__.__name__} {self.name} deals {temp_sum} DMG as DOT to {target.__class__.__name__}: {target.name}.")
-
 
 class Warrior(Character):
   def __init__(self, name, hp, damage, dodge_chance, armor):
@@ -75,15 +71,17 @@ class Warrior(Character):
   def attack(self, target):
     super().attack(target)
   
-  def take_damage(self, opponent):
+  def take_damage(self, opponent_damage):
     if self.armor >= 0:
-      self.armor -= opponent.damage
+      self.armor -= opponent_damage
       if self.armor <= 0:
         print(f"Warrior '{self.name}': {self.hp} HP left, armor broken")
       else:
         print(f"Warrior '{self.name}': {self.hp} HP left, {self.armor} armor left")
     else:
-      self.hp -= opponent.damage
+      self.hp -= opponent_damage
+      if self.hp < 0:
+        self.hp = 0
       print(f"Warrior '{self.name}': {self.hp} HP left")
 
 class Rogue(Character):
@@ -110,8 +108,10 @@ class Rogue(Character):
     else:
       super().attack(target)
   
-  def take_damage(self, opponent):
-    self.hp -= opponent.damage
+  def take_damage(self, opponent_damage):
+    self.hp -= opponent_damage
+    if self.hp < 0:
+      self.hp = 0
     print(f"Rogue '{self.name}': {self.hp} HP left")
 
 class Mage(Character, HasDOT):
@@ -128,11 +128,24 @@ class Mage(Character, HasDOT):
     print(f"DOT apply chance: {self.chance_dot}")
 
   def attack(self, target):
-    super().attack(target)
-    self.deal_dot(target)
+    take_damage_handle = False
+    if not self.dodge(target):
+      print(f"{self.__class__.__name__} {self.name} deals {self.damage} DMG to {target.__class__.__name__}: {target.name}.")
+      self.initiate_dot()
+      if not self.deal_dot(target):
+        target.take_damage(self.damage)
+      else:
+        take_damage_handle = True
+    else:
+      if self.deal_dot(target) and take_damage_handle: # TEN HANDLER DO PPOPRAWY, NIE DZIAŁA WŁAŚCIWIE
+        target.take_damage(self.damage_over_time)
+      print(f"{self.__class__.__name__} {self.name} missed! No DMG dealt to {target.__class__.__name__}: {target.name}.")
+
   
-  def take_damage(self, opponent):
-    self.hp -= opponent.damage
+  def take_damage(self, opponent_damage):
+    self.hp -= opponent_damage
+    if self.hp < 0:
+      self.hp = 0
     print(f"Mage '{self.name}': {self.hp} HP left")
 
 warrior = Warrior("Gacek", 200, 15, 10, 40)
@@ -143,14 +156,21 @@ counter = 0
 while rogue.hp > 0 and mage.hp > 0:
   counter += 1
   print(f"ROUND {counter}")
-  for i in range(3, 0, -1):
-    print(f"{i}...")
-    time.sleep(1)
+  # for i in range(3, 0, -1):
+  #   print(f"{i}...")
+  #   time.sleep(1)
   print("\nSTART!")
   print("--------------------")
-  time.sleep(2)
-
-  rogue.attack(mage)
-  time.sleep(2)
-  mage.attack(rogue)
-  time.sleep(2)
+  # time.sleep(2)
+  if rogue.hp > 0: 
+    rogue.attack(mage)
+    if mage.hp <= 0:
+      print("Rogue won!")
+      break
+  # time.sleep(2)
+  if mage.hp > 0:
+    mage.attack(rogue)
+    if rogue.hp <= 0:
+      print("Mage won!")
+      break
+  # time.sleep(2)
