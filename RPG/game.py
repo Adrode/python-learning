@@ -152,25 +152,52 @@ warrior = Warrior("Gacek", 200, 15, 10, 40)
 rogue = Rogue("Niecny Maniuś", 120, 20, 40, 50, 30)
 mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 4, 40)
 
+print("Welcome to Brightest Sanctuary!")
+
+choose_character = '5'
+while choose_character not in '123':
+  choose_character = input("Choose you character:\n[1] Warrior\n[2] Rogue\n[3] Mage\n")
+  match choose_character:
+    case '1':
+      player = warrior
+    case '2':
+      player = rogue
+    case '3':
+      player = mage
+    case _:
+      print("Wrong number typed. Choose again.")
+      continue
+
+random_enemy = str(random.randint(1, 4))
+match random_enemy:
+  case '1':
+    enemy = warrior
+  case '2':
+    enemy = rogue
+  case '3':
+    enemy = mage
+
+print(f"{player.__class__.__name__}: {player.name} VS. {enemy.__class__.__name__}: {enemy.name}")
+
 counter = 0
-while rogue.hp > 0 and mage.hp > 0:
+while player.hp > 0 and enemy.hp > 0:
   counter += 1
   print(f"ROUND {counter}")
-  # for i in range(3, 0, -1):
-  #   print(f"{i}...")
-  #   time.sleep(1)
+  for i in range(3, 0, -1):
+    print(f"{i}...")
+    time.sleep(1)
   print("\nSTART!")
   print("--------------------")
-  # time.sleep(2)
-  if rogue.hp > 0: 
-    rogue.attack(mage)
-    if mage.hp <= 0:
-      print("Rogue won!")
+  time.sleep(2)
+  if player.hp > 0: 
+    player.attack(enemy)
+    if enemy.hp <= 0:
+      print(f"{player.__class__.__name__} won! You won!")
       break
-  # time.sleep(2)
-  if mage.hp > 0:
-    mage.attack(rogue)
-    if rogue.hp <= 0:
-      print("Mage won!")
+  time.sleep(2)
+  if enemy.hp > 0:
+    enemy.attack(player)
+    if player.hp <= 0:
+      print(f"{enemy.__class__.__name__} won! Enemy won!")
       break
-  # time.sleep(2)
+  time.sleep(2)
