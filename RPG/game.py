@@ -2,6 +2,11 @@
 # Mage - 100HP, 10 DMG co turę przez 2 tury - 40% chance, 30 DMG, 20% dodge
 # Rogue - 120HP, 50% crit. - 30% szany, 20 DMG, 40% dodge
 
+# Warrior BONUS: armor, który po zejściu do wartości 0 "pęka", ale nie przepuszcza w tej turze kolejnych obrażeń przeciwnika
+# Rogue BONUS: losowa szansa na zadanie critical damage
+# Mage BONUS: nałożenie efektu DOT (damage over time), który zadaje obrażenia od tej samej tury;
+#             efekt może się multiplikować (jednocześnie może zostać nałożone wiele razy ten sam efekt, ale każdy ma swoją liczbę tur, w której obowiązuje)
+
 from abc import ABC, abstractmethod
 import random
 import time
@@ -48,13 +53,15 @@ class HasDOT:
   def initiate_dot(self):
     if self.chance_dot_counter():
       self.generate_dot_counter()
+      print(f"{self.__class__.__name__}: {self.name} applied DOT to enemy! Number of currently applied effects: {len(self.dot_counters)}")
 
   def deal_dot(self, target):
     temp_sum = 0
-    for key, value in self.dot_counters.items():
+    for key, value in list(self.dot_counters.items()):
       if value > 0:
         temp_sum += self.damage_over_time
-        target.hp -= self.damage_over_time
+        target.take_damage(self.damage_over_time) # LOGIKA JEST W PORZĄDKU, BŁĄD JEST W WYŚWIETLANIU PRINTA Z TAKE_DAMAGE()
+        #                                           trzeba to poprawić, najlepiej zrobić refactor take_damage()
         self.dot_counters.update({key: value - 1})
     if temp_sum:
       print(f"{self.__class__.__name__} {self.name} deals {temp_sum} DMG as DOT to {target.__class__.__name__}: {target.name}.")
@@ -128,17 +135,13 @@ class Mage(Character, HasDOT):
     print(f"DOT apply chance: {self.chance_dot}")
 
   def attack(self, target):
-    take_damage_handle = False
     if not self.dodge(target):
       print(f"{self.__class__.__name__} {self.name} deals {self.damage} DMG to {target.__class__.__name__}: {target.name}.")
       self.initiate_dot()
-      if not self.deal_dot(target):
-        target.take_damage(self.damage)
-      else:
-        take_damage_handle = True
+      target.take_damage(self.damage)
+      self.deal_dot(target)
     else:
-      if self.deal_dot(target) and take_damage_handle: # TEN HANDLER DO PPOPRAWY, NIE DZIAŁA WŁAŚCIWIE
-        target.take_damage(self.damage_over_time)
+      self.deal_dot(target)
       print(f"{self.__class__.__name__} {self.name} missed! No DMG dealt to {target.__class__.__name__}: {target.name}.")
 
   
@@ -150,54 +153,66 @@ class Mage(Character, HasDOT):
 
 warrior = Warrior("Gacek", 200, 15, 10, 40)
 rogue = Rogue("Niecny Maniuś", 120, 20, 40, 50, 30)
-mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 4, 40)
+mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 2, 40)
 
-print("Welcome to Brightest Sanctuary!")
+# print("Welcome to Brightest Sanctuary!")
 
-choose_character = '5'
-while choose_character not in '123':
-  choose_character = input("Choose you character:\n[1] Warrior\n[2] Rogue\n[3] Mage\n")
-  match choose_character:
-    case '1':
-      player = warrior
-    case '2':
-      player = rogue
-    case '3':
-      player = mage
-    case _:
-      print("Wrong number typed. Choose again.")
-      continue
+# choose_character = '0'
+# while choose_character not in '123':
+#   choose_character = input("Choose you character:\n[1] Warrior\n[2] Rogue\n[3] Mage\n")
+#   match choose_character:
+#     case '1':
+#       player = warrior
+#     case '2':
+#       player = rogue
+#     case '3':
+#       player = mage
+#     case _:
+#       print("Wrong number typed. Choose again.")
+#       continue
 
-random_enemy = str(random.randint(1, 4))
-match random_enemy:
-  case '1':
-    enemy = warrior
-  case '2':
-    enemy = rogue
-  case '3':
-    enemy = mage
+# random_enemy = str(random.randint(1, 4))
+# match random_enemy:
+#   case '1':
+#     enemy = warrior
+#   case '2':
+#     enemy = rogue
+#   case '3':
+#     enemy = mage
 
-print(f"{player.__class__.__name__}: {player.name} VS. {enemy.__class__.__name__}: {enemy.name}")
+# print(f"{player.__class__.__name__}: {player.name} VS. {enemy.__class__.__name__}: {enemy.name}")
 
-counter = 0
-while player.hp > 0 and enemy.hp > 0:
-  counter += 1
-  print(f"ROUND {counter}")
-  for i in range(3, 0, -1):
-    print(f"{i}...")
-    time.sleep(1)
-  print("\nSTART!")
-  print("--------------------")
-  time.sleep(2)
-  if player.hp > 0: 
-    player.attack(enemy)
-    if enemy.hp <= 0:
-      print(f"{player.__class__.__name__} won! You won!")
-      break
-  time.sleep(2)
-  if enemy.hp > 0:
-    enemy.attack(player)
-    if player.hp <= 0:
-      print(f"{enemy.__class__.__name__} won! Enemy won!")
-      break
-  time.sleep(2)
+# counter = 0
+# while player.hp > 0 and enemy.hp > 0:
+#   counter += 1
+#   print(f"ROUND {counter}")
+#   # for i in range(3, 0, -1):
+#   #   print(f"{i}...")
+#   #   time.sleep(1)
+#   print("\nSTART!")
+#   print("--------------------")
+#   # time.sleep(2)
+#   if player.hp > 0: 
+#     player.attack(enemy)
+#     if enemy.hp <= 0:
+#       print(f"{player.__class__.__name__} won! You won!")
+#       break
+#   # time.sleep(2)
+#   if enemy.hp > 0:
+#     enemy.attack(player)
+#     if player.hp <= 0:
+#       print(f"{enemy.__class__.__name__} won! Enemy won!")
+#       break
+#   # time.sleep(2)
+
+print(warrior.hp)
+mage.attack(warrior)
+print(warrior.hp)
+mage.attack(warrior)
+print(warrior.hp)
+mage.attack(warrior)
+print(warrior.hp)
+mage.attack(warrior)
+print(warrior.hp)
+mage.attack(warrior)
+print(warrior.hp)
