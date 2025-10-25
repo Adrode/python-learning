@@ -51,8 +51,8 @@ class HasCRIT:
     return random.random() < self.crit_chance / 100
 
 class HasDOT:
-  def __init__(self):
-    super().__init__()
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.base_dot_counter = 0
     self.dot_counters = {}
 
@@ -79,8 +79,8 @@ class HasDOT:
         print(target.take_damage(temp_sum))
 
 class Warrior(Character):
-  def __init__(self, name, hp, damage, dodge_chance, armor):
-    super().__init__(name, hp, damage, dodge_chance)
+  def __init__(self, name, hp, damage, dodge_chance, armor, *args, **kwargs):
+    super().__init__(name, hp, damage, dodge_chance, *args, **kwargs)
     self.armor = armor
 
   def show_stats(self):
@@ -102,6 +102,9 @@ class Warrior(Character):
       if self.hp < 0:
         self.hp = 0
       return f"Warrior '{self.name}': {self.hp} HP left"
+    
+class Knight(Warrior, HasCRIT):
+  def __init__(self, name, hp, damage, dodge_chance, armor, crit_value, crit_chance, *args, **kwargs)
 
 class Rogue(Character, HasCRIT):
   def __init__(self, name, hp, damage, dodge_chance, crit_value, crit_chance, *args, **kwargs):
@@ -129,8 +132,8 @@ class Rogue(Character, HasCRIT):
     return f"Rogue '{self.name}': {self.hp} HP left"
 
 class Mage(Character, HasDOT):
-  def __init__(self, name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot):
-    super().__init__(name, hp, damage, dodge_chance)
+  def __init__(self, name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot, *args, **kwargs):
+    super().__init__(name, hp, damage, dodge_chance, *args, **kwargs)
     self.damage_over_time = damage_over_time
     self.num_rounds_dot = num_rounds_dot
     self.chance_dot = chance_dot
