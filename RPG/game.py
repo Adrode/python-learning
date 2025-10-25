@@ -66,7 +66,7 @@ class HasDOT:
   def initiate_dot(self):
     if self.chance_dot_counter():
       self.generate_dot_counter()
-      print(f"{self.__class__.__name__} '{self.name}': applied DOT to enemy! Number of currently applied effects: {len(self.dot_counters)}")
+      print(f"{self.__class__.__name__} '{self.name}': applied DOT to enemy! Number of currently applied effects: {len(self.dot_counters)}") # tutaj do poprawki, bo podliczanie się pierdoli
 
   def deal_dot(self, target):
     temp_sum = 0
@@ -104,11 +104,22 @@ class Warrior(Character):
       return f"Warrior '{self.name}': {self.hp} HP left"
     
 class Knight(Warrior, HasCRIT):
-  def __init__(self, name, hp, damage, dodge_chance, armor, crit_value, crit_chance, *args, **kwargs)
+  def __init__(self, name, hp, damage, dodge_chance, armor, crit_value, crit_chance, *args, **kwargs):
+    super().__init__(name, hp, damage, dodge_chance, armor, crit_value, crit_chance, *args, **kwargs)
+
+  def attack(self, target):
+    if super().crit_attack_chance():
+      print("CRITICAL!")
+      temp_damage = self.damage
+      self.damage *= (self.crit_value / 100) + 1
+      super().attack(target)
+      self.damage = temp_damage
+    else:
+      super().attack(target)
 
 class Rogue(Character, HasCRIT):
   def __init__(self, name, hp, damage, dodge_chance, crit_value, crit_chance, *args, **kwargs):
-    super().__init__(name, hp, damage, dodge_chance, crit_value, crit_chance, *args, *kwargs)
+    super().__init__(name, hp, damage, dodge_chance, crit_value, crit_chance, *args, **kwargs)
 
   def show_stats(self):
     super().show_stats()
@@ -160,15 +171,16 @@ class Mage(Character, HasDOT):
       self.hp = 0
     return f"Mage '{self.name}': {self.hp} HP left"
 
-warrior = Warrior("Gacek", 200, 15, 10, 40)
+warrior = Warrior("Waruś", 200, 15, 10, 40)
+knight = Knight("Rycerzyk Henryk", 180, 20, 10, 30, 50, 50)
 rogue = Rogue("Niecny Maniuś", 120, 20, 40, 75, 30)
 mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 2, 30)
 
 print("Welcome to Brightest Sanctuary!")
 
 choose_character = '0'
-while choose_character not in '123':
-  choose_character = input("Choose you character:\n[1] Warrior\n[2] Rogue\n[3] Mage\n")
+while choose_character not in '1234':
+  choose_character = input("Choose you character:\n[1] Warrior\n[2] Rogue\n[3] Mage\n[4] Knight\n")
   match choose_character:
     case '1':
       player = warrior
@@ -176,11 +188,13 @@ while choose_character not in '123':
       player = rogue
     case '3':
       player = mage
+    case '4':
+      player = knight
     case _:
       print("Wrong number typed. Choose again.")
 
 while True:
-  random_enemy = str(random.randint(1, 4))
+  random_enemy = str(random.randint(1, 5))
   if random_enemy == choose_character:
     continue
   match random_enemy:
@@ -192,6 +206,9 @@ while True:
       break
     case '3':
       enemy = mage
+      break
+    case '4':
+      enemy = knight
       break
 
 print(f"{player.__class__.__name__}: {player.name} VS. {enemy.__class__.__name__}: {enemy.name}")
