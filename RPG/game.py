@@ -28,14 +28,14 @@ class Character(ABC):
 
   def attack(self, target):
     if not self.dodge(target):
-      print(f"{self.__class__.__name__} {self.name} deals {self.damage} DMG to {target.__class__.__name__}: {target.name}.")
-      target.take_damage(self.damage)
+      print(f"{self.__class__.__name__} '{self.name}': deals {self.damage} DMG to {target.__class__.__name__}: {target.name}.")
+      print(target.take_damage(self.damage))
     else:
-      print(f"{self.__class__.__name__} {self.name} missed! No DMG dealt to {target.__class__.__name__}: {target.name}.")
+      print(f"{self.__class__.__name__} '{self.name}': missed! No DMG dealt to {target.__class__.__name__}: {target.name}.")
 
   @abstractmethod
   def show_stats(self):
-    print(f"{self.__class__.__name__}: {self.name}\nHP: {self.hp}\nDMG: {self.damage}\nDodge chance: {self.dodge_chance}")
+    print(f"{self.__class__.__name__} '{self.name}'\nHP: {self.hp}\nDMG: {self.damage}\nDodge chance: {self.dodge_chance}")
 
 class HasDOT:
   def __init__(self):
@@ -53,18 +53,17 @@ class HasDOT:
   def initiate_dot(self):
     if self.chance_dot_counter():
       self.generate_dot_counter()
-      print(f"{self.__class__.__name__}: {self.name} applied DOT to enemy! Number of currently applied effects: {len(self.dot_counters)}")
+      print(f"{self.__class__.__name__} '{self.name}': applied DOT to enemy! Number of currently applied effects: {len(self.dot_counters)}")
 
   def deal_dot(self, target):
     temp_sum = 0
     for key, value in list(self.dot_counters.items()):
       if value > 0:
         temp_sum += self.damage_over_time
-        target.take_damage(self.damage_over_time) # LOGIKA JEST W PORZĄDKU, BŁĄD JEST W WYŚWIETLANIU PRINTA Z TAKE_DAMAGE()
-        #                                           trzeba to poprawić, najlepiej zrobić refactor take_damage()
         self.dot_counters.update({key: value - 1})
     if temp_sum:
-      print(f"{self.__class__.__name__} {self.name} deals {temp_sum} DMG as DOT to {target.__class__.__name__}: {target.name}.")
+        print(f"{self.__class__.__name__} '{self.name}': deals {temp_sum} DMG as DOT to {target.__class__.__name__}: {target.name}.")
+        print(target.take_damage(temp_sum))
 
 class Warrior(Character):
   def __init__(self, name, hp, damage, dodge_chance, armor):
@@ -82,14 +81,14 @@ class Warrior(Character):
     if self.armor >= 0:
       self.armor -= opponent_damage
       if self.armor <= 0:
-        print(f"Warrior '{self.name}': {self.hp} HP left, armor broken")
+        return f"Warrior '{self.name}': {self.hp} HP left, armor broken"
       else:
-        print(f"Warrior '{self.name}': {self.hp} HP left, {self.armor} armor left")
+        return f"Warrior '{self.name}': {self.hp} HP left, {self.armor} armor left"
     else:
       self.hp -= opponent_damage
       if self.hp < 0:
         self.hp = 0
-      print(f"Warrior '{self.name}': {self.hp} HP left")
+      return f"Warrior '{self.name}': {self.hp} HP left"
 
 class Rogue(Character):
   def __init__(self, name, hp, damage, dodge_chance, crit_value, crit_chance):
@@ -119,7 +118,7 @@ class Rogue(Character):
     self.hp -= opponent_damage
     if self.hp < 0:
       self.hp = 0
-    print(f"Rogue '{self.name}': {self.hp} HP left")
+    return f"Rogue '{self.name}': {self.hp} HP left"
 
 class Mage(Character, HasDOT):
   def __init__(self, name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot):
@@ -136,9 +135,9 @@ class Mage(Character, HasDOT):
 
   def attack(self, target):
     if not self.dodge(target):
-      print(f"{self.__class__.__name__} {self.name} deals {self.damage} DMG to {target.__class__.__name__}: {target.name}.")
+      print(f"{self.__class__.__name__} '{self.name}' deals {self.damage} DMG to {target.__class__.__name__}: {target.name}.")
       self.initiate_dot()
-      target.take_damage(self.damage)
+      print(target.take_damage(self.damage))
       self.deal_dot(target)
     else:
       self.deal_dot(target)
@@ -149,70 +148,64 @@ class Mage(Character, HasDOT):
     self.hp -= opponent_damage
     if self.hp < 0:
       self.hp = 0
-    print(f"Mage '{self.name}': {self.hp} HP left")
+    return f"Mage '{self.name}': {self.hp} HP left"
 
 warrior = Warrior("Gacek", 200, 15, 10, 40)
 rogue = Rogue("Niecny Maniuś", 120, 20, 40, 50, 30)
 mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 2, 40)
 
-# print("Welcome to Brightest Sanctuary!")
+print("Welcome to Brightest Sanctuary!")
 
-# choose_character = '0'
-# while choose_character not in '123':
-#   choose_character = input("Choose you character:\n[1] Warrior\n[2] Rogue\n[3] Mage\n")
-#   match choose_character:
-#     case '1':
-#       player = warrior
-#     case '2':
-#       player = rogue
-#     case '3':
-#       player = mage
-#     case _:
-#       print("Wrong number typed. Choose again.")
-#       continue
+choose_character = '0'
+while choose_character not in '123':
+  choose_character = input("Choose you character:\n[1] Warrior\n[2] Rogue\n[3] Mage\n")
+  match choose_character:
+    case '1':
+      player = warrior
+    case '2':
+      player = rogue
+    case '3':
+      player = mage
+    case _:
+      print("Wrong number typed. Choose again.")
+      continue
 
-# random_enemy = str(random.randint(1, 4))
-# match random_enemy:
-#   case '1':
-#     enemy = warrior
-#   case '2':
-#     enemy = rogue
-#   case '3':
-#     enemy = mage
+while True:
+  random_enemy = str(random.randint(1, 4))
+  if random_enemy == choose_character:
+    continue
+  match random_enemy:
+    case '1':
+      enemy = warrior
+      break
+    case '2':
+      enemy = rogue
+      break
+    case '3':
+      enemy = mage
+      break
 
-# print(f"{player.__class__.__name__}: {player.name} VS. {enemy.__class__.__name__}: {enemy.name}")
+print(f"{player.__class__.__name__}: {player.name} VS. {enemy.__class__.__name__}: {enemy.name}")
 
-# counter = 0
-# while player.hp > 0 and enemy.hp > 0:
-#   counter += 1
-#   print(f"ROUND {counter}")
-#   # for i in range(3, 0, -1):
-#   #   print(f"{i}...")
-#   #   time.sleep(1)
-#   print("\nSTART!")
-#   print("--------------------")
-#   # time.sleep(2)
-#   if player.hp > 0: 
-#     player.attack(enemy)
-#     if enemy.hp <= 0:
-#       print(f"{player.__class__.__name__} won! You won!")
-#       break
-#   # time.sleep(2)
-#   if enemy.hp > 0:
-#     enemy.attack(player)
-#     if player.hp <= 0:
-#       print(f"{enemy.__class__.__name__} won! Enemy won!")
-#       break
-#   # time.sleep(2)
-
-print(warrior.hp)
-mage.attack(warrior)
-print(warrior.hp)
-mage.attack(warrior)
-print(warrior.hp)
-mage.attack(warrior)
-print(warrior.hp)
-mage.attack(warrior)
-print(warrior.hp)
-mage.attack(warrior)
-print(warrior.hp)
+counter = 0
+while player.hp > 0 and enemy.hp > 0:
+  counter += 1
+  print(f"ROUND {counter}")
+  for i in range(3, 0, -1):
+    print(f"{i}...")
+    time.sleep(1)
+  print("\nSTART!")
+  print("--------------------")
+  time.sleep(2)
+  if player.hp > 0: 
+    player.attack(enemy)
+    if enemy.hp <= 0:
+      print(f"{player.__class__.__name__} won! You won!")
+      break
+  time.sleep(2)
+  if enemy.hp > 0:
+    enemy.attack(player)
+    if player.hp <= 0:
+      print(f"{enemy.__class__.__name__} won! Enemy won!")
+      break
+  time.sleep(2)
