@@ -1,19 +1,23 @@
-# Warrior - 200HP, 40 armor, 15 DMG, 10% dodge
-# Mage - 100HP, 10 DMG co turę przez 2 tury - 40% chance, 30 DMG, 20% dodge
-# Rogue - 120HP, 50% crit. - 30% szany, 20 DMG, 40% dodge
+# Warrior - 200HP, 15 DMG, 10% dodge, 40 armor
+# Knight - 180HP, 20 DMG, 10% dodge, 30 armor, 50% bonus crit. - 50% hit chance
+# Mage - 100HP, 30 DMG, 20% dodge, 10 DOT - 2 tury - 30% hit chance
+# Rogue - 120HP, 20 DMG, 40% dodge, 75% bonus crit. - 30% hit chance
+# Gunman - 100HP, 30DMG, 30% dodge, 20 DOT - 2 tury - 20% hit chance
 
 # Warrior BONUS: armor, który po zejściu do wartości 0 "pęka", ale nie przepuszcza w tej turze kolejnych obrażeń przeciwnika
+# Knight BONUS: tak jak Warrior
 # Rogue BONUS: losowa szansa na zadanie critical damage
 # Mage BONUS: nałożenie efektu DOT (damage over time), który zadaje obrażenia od tej samej tury;
 #             efekt może się multiplikować (jednocześnie może zostać nałożone wiele razy ten sam efekt, ale każdy ma swoją liczbę tur, w której obowiązuje)
+# Gunman BONUS: tak jak Mage, DOT
 
 from abc import ABC, abstractmethod
 import random
 import time
 
 class Character(ABC):
-  def __init__(self, name, hp, damage, dodge_chance):
-    super().__init__()
+  def __init__(self, name, hp, damage, dodge_chance, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.name = name
     self.hp = hp
     self.damage = damage
@@ -28,14 +32,23 @@ class Character(ABC):
 
   def attack(self, target):
     if not self.dodge(target):
-      print(f"{self.__class__.__name__} '{self.name}': deals {self.damage} DMG to {target.__class__.__name__}: {target.name}.")
+      print(f"{self.__class__.__name__} '{self.name}': deals {self.damage} DMG to {target.__class__.__name__}: '{target.name}'.")
       print(target.take_damage(self.damage))
     else:
-      print(f"{self.__class__.__name__} '{self.name}': missed! No DMG dealt to {target.__class__.__name__}: {target.name}.")
+      print(f"{self.__class__.__name__} '{self.name}': missed! No DMG dealt to {target.__class__.__name__}: '{target.name}'.")
 
   @abstractmethod
   def show_stats(self):
     print(f"{self.__class__.__name__} '{self.name}'\nHP: {self.hp}\nDMG: {self.damage}\nDodge chance: {self.dodge_chance}")
+
+class HasCRIT:
+  def __init__(self, crit_value, crit_chance, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.crit_value = crit_value
+    self.crit_chance = crit_chance
+
+  def crit_attack_chance(self):
+    return random.random() < self.crit_chance / 100
 
 class HasDOT:
   def __init__(self):
@@ -90,22 +103,17 @@ class Warrior(Character):
         self.hp = 0
       return f"Warrior '{self.name}': {self.hp} HP left"
 
-class Rogue(Character):
-  def __init__(self, name, hp, damage, dodge_chance, crit_value, crit_chance):
-    super().__init__(name, hp, damage, dodge_chance)
-    self.crit_value = crit_value
-    self.crit_chance = crit_chance
+class Rogue(Character, HasCRIT):
+  def __init__(self, name, hp, damage, dodge_chance, crit_value, crit_chance, *args, **kwargs):
+    super().__init__(name, hp, damage, dodge_chance, crit_value, crit_chance, *args, *kwargs)
 
   def show_stats(self):
     super().show_stats()
     print(f"Crit value: {self.crit_value}")
     print(f"Crit chance: {self.crit_chance}")
 
-  def crit_attack_chance(self):
-    return random.random() < self.crit_chance / 100
-
   def attack(self, target):
-    if self.crit_attack_chance():
+    if super().crit_attack_chance():
       print("CRITICAL!")
       temp_damage = self.damage
       self.damage *= (self.crit_value / 100) + 1
@@ -143,7 +151,6 @@ class Mage(Character, HasDOT):
       self.deal_dot(target)
       print(f"{self.__class__.__name__} {self.name} missed! No DMG dealt to {target.__class__.__name__}: {target.name}.")
 
-  
   def take_damage(self, opponent_damage):
     self.hp -= opponent_damage
     if self.hp < 0:
@@ -151,8 +158,8 @@ class Mage(Character, HasDOT):
     return f"Mage '{self.name}': {self.hp} HP left"
 
 warrior = Warrior("Gacek", 200, 15, 10, 40)
-rogue = Rogue("Niecny Maniuś", 120, 20, 40, 50, 30)
-mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 2, 40)
+rogue = Rogue("Niecny Maniuś", 120, 20, 40, 75, 30)
+mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 2, 30)
 
 print("Welcome to Brightest Sanctuary!")
 
@@ -168,7 +175,6 @@ while choose_character not in '123':
       player = mage
     case _:
       print("Wrong number typed. Choose again.")
-      continue
 
 while True:
   random_enemy = str(random.randint(1, 4))
