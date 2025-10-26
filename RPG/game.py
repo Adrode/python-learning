@@ -39,7 +39,10 @@ class Character(ABC):
 
   @abstractmethod
   def show_stats(self):
-    print(f"{self.__class__.__name__} '{self.name}'\nHP: {self.hp}\nDMG: {self.damage}\nDodge chance: {self.dodge_chance}")
+    print(f"{self.__class__.__name__} '{self.name}'")
+    print(f"HP: {self.hp}")
+    print(f"DMG: {self.damage}")
+    print(f"Dodge chance: {self.dodge_chance}%")
 
 class HasCRIT:
   def __init__(self, crit_value, crit_chance, *args, **kwargs):
@@ -107,6 +110,11 @@ class Knight(Warrior, HasCRIT):
   def __init__(self, name, hp, damage, dodge_chance, armor, crit_value, crit_chance, *args, **kwargs):
     super().__init__(name, hp, damage, dodge_chance, armor, crit_value, crit_chance, *args, **kwargs)
 
+  def show_stats(self):
+    super().show_stats()
+    print(f"Crit value: {self.crit_value}")
+    print(f"Crit chance: {self.crit_chance}%")
+
   def attack(self, target):
     if super().crit_attack_chance():
       print("CRITICAL!")
@@ -124,7 +132,7 @@ class Rogue(Character, HasCRIT):
   def show_stats(self):
     super().show_stats()
     print(f"Crit value: {self.crit_value}")
-    print(f"Crit chance: {self.crit_chance}")
+    print(f"Crit chance: {self.crit_chance}%")
 
   def attack(self, target):
     if super().crit_attack_chance():
@@ -153,7 +161,7 @@ class Mage(Character, HasDOT):
     super().show_stats()
     print(f"Damage over time: {self.damage_over_time}")
     print(f"No. of rounds for DOT: {self.num_rounds_dot}")
-    print(f"DOT apply chance: {self.chance_dot}")
+    print(f"DOT apply chance: {self.chance_dot}%")
 
   def attack(self, target):
     if not self.dodge(target):
@@ -174,6 +182,11 @@ class Mage(Character, HasDOT):
 class Gunman(Mage, HasCRIT):
   def __init__(self, name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot, crit_value, crit_chance, *args, **kwargs):
     super().__init__(name, hp, damage, dodge_chance, damage_over_time, num_rounds_dot, chance_dot, crit_value, crit_chance, *args, **kwargs)
+
+  def show_stats(self):
+    super().show_stats()
+    print(f"Crit value: {self.crit_value}")
+    print(f"Crit chance: {self.crit_chance}%")
   
   def attack(self, target):
     if not self.dodge(target):
@@ -199,7 +212,24 @@ rogue = Rogue("Niecny Maniuś", 120, 20, 40, 75, 30)
 mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 2, 30)
 gunman = Gunman("Strzelczyk Szczepan", 100, 30, 30, 20, 2, 20, 100, 50)
 
+all_characters = [warrior, knight, rogue, mage, gunman]
+
+def show_all_stats():
+  for character in all_characters:
+    character.show_stats()
+    print("----------")
+
 print("Welcome to Brightest Sanctuary!")
+while True:
+  menu = input("[1] Show statistics of all characters\n[2] Start game\n")
+  if menu not in '12':
+    print("Wrong number typed. Choose again")
+    continue
+  match menu:
+    case '1':
+      show_all_stats()
+    case '2':
+      break
 
 choose_character = '0'
 while choose_character not in '12345':
