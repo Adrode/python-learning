@@ -20,6 +20,7 @@ class Item:
     self.item_name = item_name
     self.bonus_hp = bonus_hp
     self.bonus_damage = bonus_damage
+    self.applied = False
 
   def __str__(self):
     if self.bonus_hp:
@@ -71,10 +72,13 @@ class Character(ABC):
 
   def apply_item_effect(self):
     for item in self.inventory:
+      if item.applied:
+        continue
       if item.bonus_hp:
         self.hp += item.bonus_hp
       elif item.bonus_damage:
         self.damage += item.bonus_damage
+      item.applied = True
 
   @classmethod
   def count_all_characters(cls):
@@ -334,7 +338,7 @@ while True:
       enemy = knight
       break
     case '5':
-      player = gunman
+      enemy = gunman
       break
 
 print(f"{player} VS. {enemy}")
