@@ -115,7 +115,7 @@ class HasDOT:
   def initiate_dot(self):
     if self.chance_dot_counter():
       self.generate_dot_counter()
-      print(f"{self.__class__.__name__} '{self.name}': applied DOT to enemy! Number of currently applied effects: {len(self.dot_counters)}") # tutaj do poprawki, bo podliczanie się pierdoli
+      print(f"{self.__class__.__name__} '{self.name}': applied DOT to enemy! Number of currently applied effects: {len(self.dot_counters)}")
 
   def deal_dot(self, target):
     temp_sum = 0
@@ -123,6 +123,8 @@ class HasDOT:
       if value > 0:
         temp_sum += self.damage_over_time
         self.dot_counters.update({key: value - 1})
+      elif value == 0:
+        self.dot_counters.pop(key)
     if temp_sum:
         print(f"{self.__class__.__name__} '{self.name}': deals {temp_sum} DMG as DOT to {target.__class__.__name__}: {target.name}.")
         print(target.take_damage(temp_sum))
