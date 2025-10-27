@@ -16,12 +16,21 @@ import random
 import time
 
 class Character(ABC):
+  all_characters = []
+
   def __init__(self, name, hp, damage, dodge_chance, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.name = name
     self.hp = hp
     self.damage = damage
     self.dodge_chance = dodge_chance
+    Character.all_characters.append(self)
+
+  def __str__(self):
+    return f"{self.__class__.__name__}, name: '{self.name}'"
+  
+  def __gt__(self, opponent):
+    return self.damage > opponent.damage
 
   def dodge(self, target):
     return random.random() < target.dodge_chance / 100
@@ -39,10 +48,20 @@ class Character(ABC):
 
   @abstractmethod
   def show_stats(self):
-    print(f"{self.__class__.__name__} '{self.name}'")
+    print(f"{self.__class__.__name__} '{self.name}':")
     print(f"HP: {self.hp}")
     print(f"DMG: {self.damage}")
     print(f"Dodge chance: {self.dodge_chance}%")
+
+  @classmethod
+  def count_all_characters(cls):
+    return f"Number of characters: {len(cls.all_characters)}"
+  
+  @classmethod
+  def show_characters_stats(cls):
+    for character in cls.all_characters:
+      print("")
+      character.show_stats()
 
 class HasCRIT:
   def __init__(self, crit_value, crit_chance, *args, **kwargs):
@@ -212,24 +231,19 @@ rogue = Rogue("Niecny Maniuś", 120, 20, 40, 75, 30)
 mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 2, 30)
 gunman = Gunman("Strzelczyk Szczepan", 100, 30, 30, 20, 2, 20, 100, 50)
 
-all_characters = [warrior, knight, rogue, mage, gunman]
-
-def show_all_stats():
-  for character in all_characters:
-    character.show_stats()
-    print("----------")
-
 print("Welcome to Brightest Sanctuary!")
 while True:
-  menu = input("[1] Show statistics of all characters\n[2] Start game\n")
-  if menu not in '12':
+  menu = input("[1] Start game\n[2] Statistics of all characters\n[3] Number of characters\n")
+  if menu not in '123':
     print("Wrong number typed. Choose again")
     continue
   match menu:
     case '1':
-      show_all_stats()
-    case '2':
       break
+    case '2':
+      Character.show_characters_stats()
+    case '3':
+      print(Character.count_all_characters())
 
 choose_character = '0'
 while choose_character not in '12345':
@@ -269,7 +283,7 @@ while True:
       player = gunman
       break
 
-print(f"{player.__class__.__name__}: {player.name} VS. {enemy.__class__.__name__}: {enemy.name}")
+print(f"{player} VS. {enemy}")
 
 counter = 0
 while player.hp > 0 and enemy.hp > 0:
