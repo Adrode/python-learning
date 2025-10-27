@@ -15,15 +15,28 @@ from abc import ABC, abstractmethod
 import random
 import time
 
+class Item:
+  def __init__(self, item_name, bonus_hp = None, bonus_damage = None):
+    self.item_name = item_name
+    self.bonus_hp = bonus_hp
+    self.bonus_damage = bonus_damage
+
+  def __str__(self):
+    if self.bonus_hp:
+      return f"{self.item_name}: +{self.bonus_hp} HP"
+    elif self.bonus_damage:
+      return f"{self.item_name}: +{self.bonus_damage} DMG"
+
 class Character(ABC):
   all_characters = []
 
-  def __init__(self, name, hp, damage, dodge_chance, *args, **kwargs):
+  def __init__(self, name, hp, damage, dodge_chance,*args, **kwargs):
     super().__init__(*args, **kwargs)
     self.name = name
     self.hp = hp
     self.damage = damage
     self.dodge_chance = dodge_chance
+    self.inventory = []
     Character.all_characters.append(self)
 
   def __str__(self):
@@ -52,6 +65,16 @@ class Character(ABC):
     print(f"HP: {self.hp}")
     print(f"DMG: {self.damage}")
     print(f"Dodge chance: {self.dodge_chance}%")
+
+  def add_item(self, item):
+    self.inventory.append(item)
+
+  def apply_item_effect(self):
+    for item in self.inventory:
+      if item.bonus_hp:
+        self.hp += item.bonus_hp
+      elif item.bonus_damage:
+        self.damage += item.bonus_damage
 
   @classmethod
   def count_all_characters(cls):
@@ -231,6 +254,10 @@ rogue = Rogue("Niecny Maniuś", 120, 20, 40, 75, 30)
 mage = Mage("Czarujący Czarek", 100, 30, 20, 10, 2, 30)
 gunman = Gunman("Strzelczyk Szczepan", 100, 30, 30, 20, 2, 20, 100, 50)
 
+magic_ketchup = Item("Magic Ketchup potion", bonus_hp = 30)
+iron_sworden = Item("Iron Sworden", bonus_damage = 10)
+water_fireball = Item("Water fireball", bonus_damage = 10)
+
 print("Welcome to Brightest Sanctuary!")
 while True:
   menu = input("[1] Start game\n[2] Statistics of all characters\n[3] Number of characters\n")
@@ -245,22 +272,49 @@ while True:
     case '3':
       print(Character.count_all_characters())
 
-choose_character = '0'
-while choose_character not in '12345':
+while True:
   choose_character = input("Choose you character:\n[1] Warrior\n[2] Rogue\n[3] Mage\n[4] Knight\n[5] Gunman\n")
+  if choose_character not in '12345':
+    print("Wrong number typed. Choose again.")
+    continue
   match choose_character:
     case '1':
       player = warrior
+      break
     case '2':
       player = rogue
+      break
     case '3':
       player = mage
+      break
     case '4':
       player = knight
+      break
     case '5':
       player = gunman
-    case _:
-      print("Wrong number typed. Choose again.")
+      break
+
+while True:
+  choose_item = input(f"Choose item:\n[1] {magic_ketchup}\n[2] {iron_sworden}\n[3] {water_fireball}\n")
+  if choose_item not in '123':
+    print("Wrong number typed. Choose again.")
+    continue
+  match choose_item:
+    case '1':
+      player.add_item(magic_ketchup)
+      player.apply_item_effect()
+      print(f"{magic_ketchup} choosen")
+      break
+    case '2':
+      player.add_item(iron_sworden)
+      player.apply_item_effect()
+      print(f"{iron_sworden} choosen")
+      break
+    case '3':
+      player.add_item(water_fireball)
+      player.apply_item_effect()
+      print(f"{water_fireball} choosen")
+      break
 
 while True:
   random_enemy = str(random.randint(1, 6))
@@ -289,10 +343,9 @@ counter = 0
 while player.hp > 0 and enemy.hp > 0:
   counter += 1
   print(f"ROUND {counter}")
-  for i in range(3, 0, -1):
-    print(f"{i}...")
-    time.sleep(1)
-  print("\nSTART!")
+  time.sleep(2)
+  print("--------------------")
+  print("START!")
   print("--------------------")
   time.sleep(2)
   if player.hp > 0: 
