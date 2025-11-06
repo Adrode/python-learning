@@ -1,5 +1,10 @@
-fibo_elements = [0, 1]
-for i in range(10):
-    fibo_elements.append(fibo_elements[-1] + fibo_elements[-2])
+def F(n):
+  if n == 0:
+    return 0
+  if n == 1:
+    return 1
+  else:
+    return F(n - 1) + F(n - 2)
 
-print(fibo_elements)
+for i in range(45):
+  print(F(i))
