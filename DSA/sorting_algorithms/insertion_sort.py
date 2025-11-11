@@ -1,4 +1,6 @@
 # Insertion sort
+#   Time O(n^2)
+#   Space O(1)
 
 A = [-10, 1, 15, 3, 2, 5, 6, -1, 3]
 
