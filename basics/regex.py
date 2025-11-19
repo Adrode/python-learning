@@ -3,18 +3,24 @@ import re
 text = input("Type text: ")
 
 # email
-email_pattern = r"^[a-zA-Z0-9.-_]+@[a-zA-Z]+\.(com|net|org|edu)$"
+email_pattern = r"[a-zA-Z0-9.-_]+@[a-zA-Z]+\.(com|net|org|edu)"
 
 if re.search(email_pattern, text):
-  print("It's a valid email")
+  print("There is a valid email")
+else:
+  print("There is no email")
 
 # only digits
-only_digits = r"^[0-9]+$"
+only_digits = r"\b[0-9]+\b"
 
 if re.search(only_digits, text):
-  print("It's an only-digits")
+  print("There is an only-digits")
+else:
+  print("There is no only-digits")
 
 # fullname
-full_name = r"^[A-Z][a-z]+ [A-Z][a-z]+$"
+full_name = r"\b[A-Z][a-z]+ [A-Z][a-z]+\b"
 if re.search(full_name, text):
-  print("It's a fullname")
+  print("There is a fullname")
+else:
+  print("There is no fullname")
